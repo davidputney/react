@@ -70,7 +70,7 @@ var paths = {
     dist : 'public/'
   },
   scripts : {
-    input : 'source/scripts/to_concat/**/*.js',
+    input : 'source/scripts/to_concat/**/*.{js,jsx}',
     exclude : 'source/scripts/exclude/*.js',
     vendor : 'source/scripts/to_concat/vendor/*.js',
     temp : 'test/scripts/temp',
