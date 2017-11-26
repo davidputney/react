@@ -494,3 +494,48 @@ input.color[type=radio]:checked + label {
 .loader.failed {
   background-color: red;
 }
+.saved-overlay {
+  position: absolute;
+  top:12px;
+  left:0;
+  right:0;
+  margin:0 auto;
+  width:100%;
+  text-align: center;
+  padding:2px 0 2px;
+  background-color: rgba(#444, .3);
+  color:white;
+  font-size:9px;
+  text-transform: uppercase;
+  width:60px;
+  letter-spacing: .08rem;
+  border-radius: 16px;
+  opacity:0;
+  // animation-name: example;
+  // animation-duration: 1s;
+}
+.saved-overlay.active {
+  // background-color: blue;
+  animation-name: example;
+  animation-duration: 1.5s;
+  animation-iteration-count: 1;
+  opacity:100%;
+}
+@keyframes example {
+    0% {
+      // background-color: rgba(#444, .7);
+      opacity:0;
+    }
+    15% {
+      // background-color: blue;
+      opacity: 1;
+    }
+    50% {
+      // background-color: blue;
+      opacity:1;
+    }
+    100% {
+      // background-color: rgba(#444, .7);
+      opacity:0
+    }
+}
