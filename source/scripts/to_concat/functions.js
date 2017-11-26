@@ -250,6 +250,16 @@ NoteText.propTypes = {
   note: React.PropTypes.object,
 }
 
+const NoteTextSaved = ({ id="default", saveID, saveStatus }) => {
+  return (
+  <div
+    className = {saveStatus && saveID ===id ? "saved-overlay active": "saved-overlay"}
+  >
+    Saved
+  </div> )
+}
+
+
 const Button = ({ action = f => f, id = "", label = "" }) => {
   let _btn
   const submit = e => {
@@ -441,6 +451,9 @@ class NoteToo extends React.Component {
           editHistory={this.props.editHistory}
           toggle={this.props.handleEditToggle}
           note={this.props.singleNote}
+          id={singleNote.id}
+          saveStatus={saveStatus}
+          saveID={saveID}
         />
         <NoteFooter
           colors={this.props.colors}
@@ -463,7 +476,7 @@ class NoteToo extends React.Component {
 class App extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { notesCont, editStates, loading: false, count: 0 }
+    this.state = { notesCont, editStates, loading: false, count: 0, saveStatus: false, saveID: "default-save-x" }
     this.handleCheck = this.handleCheck.bind(this)
     this.handleNoteText = this.handleNoteText.bind(this)
     this.handleEditHistory = this.handleEditHistory.bind(this)
@@ -543,19 +556,31 @@ class App extends React.Component {
     })
     this.setState({ notesCont })
   }
-  handleNoteText(val, id, ) {
-    let notes = [ ...this.state.notesCont ]
-    writeNewPost({ text: val },`notes/${id}/`)
+  handleNoteText(val, id) {
+    let notes = { ...this.state }
+    notes.notesCont.map(note =>
+      note.text = (id === note.id) ? val: note.text)
+    this.setState(notes, (idfoo = id, valfoo = val) => this.handleNoteSave(idfoo, valfoo))
+  }
+  handleNoteSave(id, val) {
+    this.setState({ saveStatus: false, saveID: null }, () =>
+      writeNewPost({text: val},`notes/${id}`)
+      .then (
+        foobar => foobar.text === val? this.handleSaveSucceess(id): this.handleNoteSaveFail(val, id, "then")
+      )
+      .catch (
+        this.handleNoteSaveFail(val, id, "catch")
+      // failure handler
+      )
+    )
+  }
+  handleNoteSaveFail(val, id, string) {
 
-    console.log(notes);
-    const notesAdd = notes.map((el, i) => console.log(el))
 
-
-    getData(`notes/${id}/text`)
-    .then(snapshot => {
-      notes = notes.notesCont.map(note => note.text = (id === notes.id) ? snapshot: note.text)
-      this.setState(notes)
-    })
+  }
+  handleSaveSucceess(id) {
+    console.log("save worked");
+    this.setState({ saveStatus: true, saveID: id }, (valu = this.state) => console.log("save success", valu))
   }
   handleEditToggle(val, id) {
     let notes = { ...this.state }
@@ -564,6 +589,8 @@ class App extends React.Component {
         note.editMode = val
       }
     })
+    notes.saveStatus = false;
+    notes.saveID = null;
     this.setState(notes)
   }
   handleEditHistory(val, id) {
@@ -619,7 +646,8 @@ class App extends React.Component {
   const notes = this.state
     return (
       this.state.loading && !this.state.loadFailed ? <Loader /> :
-      this.state.loadFailed ? <Failed
+      this.state.loadFailed ?
+      <Failed
         action = {this.handleReload}
       /> :
       <div className={this.state.loading? "notes-app": "notes-app active"}>
@@ -638,6 +666,8 @@ class App extends React.Component {
             handleColorPicker={this.handleColorPicker}
             key={i}
             handleMount={this.handleMount}
+            saveStatus={this.state.saveStatus}
+            saveID={this.state.saveID}
           />)
       )}
         <NewNote handleNewNote={this.handleNewNote} />
