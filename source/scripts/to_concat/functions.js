@@ -6,6 +6,7 @@ import { Children, PropTypes } from 'react'
 
 import { newPostKey, writeNewPost, cleanData, getData } from "./modules/firebase";
 
+
 const app = document.querySelector("#app")
 const database = firebase.database()
 
@@ -26,7 +27,7 @@ const Loader = () =>
     <h1>Loading</h1>
   </div>
 
-  const Failed = ({ action = f => f }) => {
+const Failed = ({ action = f => f }) => {
   let _select
   const submit = (e) => {
     e.preventDefault()
@@ -39,7 +40,8 @@ const Loader = () =>
       >
         Failed</h1>
     </div>
-  )}
+  )
+}
 
 const Assigned = ({ action = f => f, text = "", list = [], id }) => {
   let _select
@@ -73,7 +75,7 @@ Assigned.defaultProps = {
   text: "",
   list: [],
   id: "",
-};
+}
 
 const Select = ({ item }) =>
   <option>{item}</option>
@@ -163,7 +165,7 @@ Checkbox.defaultProps = {
 }
 
 const ColorPicker = ({ colors, id, selectColor }) =>
-  <div className="notes-color-picker">
+    <div className="notes-color-picker">
     <div className="notes-picker-icn" >
       <svg className="icn-color" >
         <use xlinkHref="#crayons" / >
@@ -181,33 +183,33 @@ const ColorPicker = ({ colors, id, selectColor }) =>
     </div>
   </div>
 
-  ColorPicker.propTypes = {
-    colors: React.PropTypes.array,
-    selectColor: React.PropTypes.func,
-    id: React.PropTypes.string,
-  }
+ColorPicker.propTypes = {
+  colors: React.PropTypes.array,
+  selectColor: React.PropTypes.func,
+  id: React.PropTypes.string,
+}
 
-  const ColorSwatch = ({ color, id, selectColor }) => {
-    let _radio
-    const submit = (e => selectColor(id, color))
-      return (
-        <div>
-          <input id={`${id}${color}`}
-            className={color, "color"}
-            name={`clrs-${id}`}
-            type="radio"
-            value={color}
-            ref={input => _radio = input}
-            onChange={submit}
-          />
-          <label
-              htmlFor={`${id}${color}`}
-              className={color}
-            >
-              {color}
-          </label>
-        </div>
-    )
+const ColorSwatch = ({ color, id, selectColor }) => {
+  let _radio
+  const submit = (e => selectColor(id, color))
+  return (
+    <div>
+      <input id={`${id}${color}`}
+        className={color, "color"}
+        name={`clrs-${id}`}
+        type="radio"
+        value={color}
+        ref={input => _radio = input}
+        onChange={submit}
+      />
+      <label
+        htmlFor={`${id}${color}`}
+        className={color}
+      >
+        {color}
+      </label>
+    </div>
+  )
 }
 ColorSwatch.propTypes = {
   color: React.PropTypes.string,
@@ -223,12 +225,20 @@ const NoteText = ({ toggle = "false", noteInput = f => f, editHistory = f => f, 
     editHistory(_textArea.innerText, note.id)
     toggle(!editMode, note.id)
   }
-const textDisplay = () => {
-  _textArea.focus()
-  if (!editMode) {
-    toggle(!editMode, note.id)
+  const textDisplay = () => {
+    _textArea.focus()
+    if (!editMode) {
+      toggle(!editMode, note.id)
+    }
   }
-}
+  const handleReturn = (e) => {
+    console.log(e.shiftKey);
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      submit()
+    }
+
+  }
   return (
     <div
       contentEditable={editMode}
@@ -236,6 +246,7 @@ const textDisplay = () => {
       ref={input => _textArea = input}
       onBlur={submit}
       onClick={textDisplay}
+      onKeyPress={handleReturn}
       placeholder="Enter note text ..."
     >
       {note.text}
@@ -262,7 +273,7 @@ const NoteTextSaved = ({ id="default", saveID, saveStatus }) => {
 
 const Button = ({ action = f => f, id = "", label = "" }) => {
   let _btn
-  const submit = e => {
+  const submit = (e) => {
     e.preventDefault()
     action(id)
  }
@@ -289,7 +300,7 @@ const CloseButton = ({ action, id }) => {
   const submit = (e) => {
     e.preventDefault()
     action(id)
- }
+  }
   return (
     <svg
       className="note-close-btn"
@@ -297,7 +308,7 @@ const CloseButton = ({ action, id }) => {
       onClick={submit}
       ref={input => _btn=input}
     >
-      <use xlinkHref='#close_icon' />
+      <use xlinkHref="#close_icon" />
     </svg>
   )
 }
@@ -308,7 +319,7 @@ CloseButton.propTypes = {
 
 const RevertButton = ({ action, id }) => {
   let _btn
-  const submit = e => {
+  const submit = (e) => {
     e.preventDefault()
     action(id)
   }
@@ -334,7 +345,7 @@ const RestoreButton = ({ action, id }) => {
   const submit = ((e) => {
     e.preventDefault()
     action(id)
- })
+  })
   return (
     <svg
       className="note-revert-btn"
@@ -352,67 +363,71 @@ RestoreButton.propTypes = {
   id: React.PropTypes.string,
 }
 
-
 const NoteHeader = ({action, id}) =>
-<header
+  <header
   className="note-header">
     <CloseButton
       action={action}
       id={id}
-  />
-</header>
-
-const NoteContent = ({noteInput, editHistory, toggle, note }) =>
-<div
-  className="note-content">
-    <NoteText
-      noteInput={noteInput}
-      editHistory={editHistory}
-      toggle={toggle}
-      note={note}
     />
-</div>
+  </header>
 
-const NoteFooter = ({colors, id, selectColor, action, label, checked, checkChange, text, list, dropAction}) =>
-<footer
+const NoteContent = ({noteInput, editHistory, toggle, note, id, saveStatus, saveID }) =>
+    <div
+    className="note-content">
+      <NoteTextSaved
+        id={id}
+        saveStatus={saveStatus}
+        saveID={saveID}
+      />
+      <NoteText
+        noteInput={noteInput}
+        editHistory={editHistory}
+        toggle={toggle}
+        note={note}
+    />
+  </div>
+
+const NoteFooter = ({ colors, id, selectColor, action, label, checked, checkChange, text, list, dropAction }) =>
+  <footer
   className="note-footer">
     <ColorPicker
-      colors={ colors }
-      id={ id }
-      selectColor={ selectColor }
+      colors={colors}
+      id={id}
+      selectColor={selectColor}
     />
-  <div>
-    <RevertButton
-      action={ action }
-      id={ id }
-      label={ label }
-    />
-    <RestoreButton
-      action={ action }
-      id={ id }
-      label={ label }
-    />
-  </div>
-  <div
-    className="notes-status">
-    <Checkbox
-      checked={ checked }
-      checkChange={ checkChange }
-    />
-    <SelectDropdown
-      text={ text }
-      list={ list }
-      id={ id }
-      action={ dropAction }
-    />
-    <Assigned
-      text={ text }
-      list={ list }
-      id={ id }
-      action={ dropAction }
-    />
-  </div>
-</footer>
+    <div>
+      <RevertButton
+        action={action}
+        id={id}
+        label={label}
+      />
+      <RestoreButton
+        action={action}
+        id={id}
+        label={label}
+      />
+    </div>
+    <div
+      className="notes-status">
+      <Checkbox
+        checked={checked}
+        checkChange={checkChange}
+      />
+      <SelectDropdown
+        text={text}
+        list={list}
+        id={id}
+        action={dropAction}
+      />
+      <Assigned
+        text={text}
+        list={list}
+        id={id}
+        action={dropAction}
+      />
+    </div>
+  </footer>
 
 
 const NewNote = ({ handleNewNote }) => {
@@ -432,46 +447,41 @@ NewNote.propTypes = {
   handleNewNote: React.PropTypes.func,
 }
 
-class NoteToo extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-  render() {
+
+const NoteToo = ({  handleNoteRemove, singleNote, noteInput, editHistory, handleEditToggle, saveStatus, saveID, colors, handleColorPicker, handleRevert, checkChange, namesList, handleAssigned }) => {
     return (
       <article
-        className={`note ${this.props.singleNote.color}`}
-        id={`note-${this.props.singleNote.id}`}
+        className={`note ${singleNote.color}`}
+        id={`note-${singleNote.id}`}
       >
         <NoteHeader
-          action={this.props.handleNoteRemove}
-          id={this.props.singleNote.id}
+          action={handleNoteRemove}
+          id={singleNote.id}
         />
         <NoteContent
-          noteInput={this.props.noteInput}
-          editHistory={this.props.editHistory}
-          toggle={this.props.handleEditToggle}
-          note={this.props.singleNote}
+          noteInput={noteInput}
+          editHistory={editHistory}
+          toggle={handleEditToggle}
+          note={singleNote}
           id={singleNote.id}
           saveStatus={saveStatus}
           saveID={saveID}
         />
         <NoteFooter
-          colors={this.props.colors}
-          id={this.props.singleNote.id}
-          selectColor={this.props.handleColorPicker}
-          action={this.props.handleRevert}
+          colors={colors}
+          id={singleNote.id}
+          selectColor={handleColorPicker}
+          action={handleRevert}
           label={"Revert"}
-          checked={this.props.singleNote.done}
-          checkChange={this.props.checkChange}
-          text={this.props.singleNote.assigned}
-          list={this.props.namesList}
-          dropAction = {this.props.handleAssigned}
+          checked={singleNote.done}
+          checkChange={checkChange}
+          text={singleNote.assigned}
+          list={namesList}
+          dropAction = {handleAssigned}
         />
       </article>
     )
   }
-}
-
 
 class App extends React.Component {
   constructor(props) {
@@ -497,10 +507,9 @@ class App extends React.Component {
     .then(notesCont => {
       this.setState({ notesCont, loading:false, loadFailed:false })
     }).catch(
-      err => this.handleLoadFail(err)
+      // err => this.handleLoadFail(err)
+      // error here
     )
-  }
-  componentDidMount() {
   }
   handleLoadFail(err=false) {
     if (err) {
@@ -508,7 +517,7 @@ class App extends React.Component {
     }
   }
   handleReload() {
-    let url = rando() === 1 ? "notes/" : "notes/zzzz"
+    let url = rando() === 1 ? "notes/" : "notes/"
     this.setState({ loadFailed:false, loading: true })
     getData(url)
     .then(
@@ -616,7 +625,7 @@ class App extends React.Component {
   handleRevert(id) {
     const editsList = { ...this.state }
     // i=which one matches -- index of false
-    // l=length of edit chain -- length or false
+    // l=laZZFCength of edit chain -- length or false
     let i = false
     let l = false
     editsList.notesCont.some((el, indx) => {
