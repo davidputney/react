@@ -12,7 +12,16 @@ const database = firebase.database()
 
 
 let notesCont = []
+let notesHash = []
 let namesList = notesCont.map(note => note.assigned)
+
+
+const createNotesHash = r => {
+  notesHash = r.map(el => el.id)
+}
+
+// console.log("hash", createNotesHash(notesCont));
+
 
 namesList = namesList.filter((elem, index, self) => index == self.indexOf(elem))
 namesList.push("Unassigned")
@@ -237,7 +246,6 @@ const NoteText = ({ toggle = "false", noteInput = f => f, editHistory = f => f, 
       e.preventDefault()
       submit()
     }
-
   }
   return (
     <div
@@ -505,8 +513,8 @@ class App extends React.Component {
       data => cleanData(data.val())
     )
     .then(notesCont => {
-      this.setState({ notesCont, loading:false, loadFailed:false })
-    }).catch(
+      this.setState({ notesCont, loading:false, loadFailed:false }, createNotesHash(notesCont)) }
+    ).catch(
       // err => this.handleLoadFail(err)
       // error here
     )
@@ -567,8 +575,13 @@ class App extends React.Component {
   }
   handleNoteText(val, id) {
     let notes = { ...this.state }
-    notes.notesCont.map(note =>
-      note.text = (id === note.id) ? val: note.text)
+    // console.log("index", notesHash.indexOf(id));
+    // console.log("id", id);
+    // console.log(notesHash);
+    const i = notesHash.indexOf(id)
+    notes.notesCont[i].text = val
+    // notes.notesCont.map(note =>
+    //   note.text = (id === note.id) ? val: note.text)
     this.setState(notes, (idfoo = id, valfoo = val) => this.handleNoteSave(idfoo, valfoo))
   }
   handleNoteSave(id, val) {
