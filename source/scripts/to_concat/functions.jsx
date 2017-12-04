@@ -16,6 +16,8 @@ import {Loader, Failed} from "./modules/module_loaders"
 
 const app = document.querySelector("#app")
 
+console.log("foo");
+
 let notesCont = []
 let notesHash = []
 let namesList = notesCont.map(note => note.assigned)
