@@ -16,7 +16,8 @@ var concat = require('gulp-concat'),
     jshint = require('gulp-jshint'),
     babel = require("gulp-babel"),
     eslint = require('gulp-eslint'),
-    babelify = require('babelify');
+    babelify = require('babelify'),
+    sourcemaps = require('gulp-sourcemaps');
 
 //css
 var sass = require('gulp-sass'),
@@ -168,11 +169,13 @@ gulp.task('clean-temp', function(){
 
 gulp.task('js', ['clean-temp'], function() {
   gulp.src([paths.scripts.input])
+    .pipe(sourcemaps.init())
     .pipe(babel(
       {
 			presets: ['env', 'react']
 		}
     ))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest(paths.scripts.temp));
 
   //  .pipe(concat('main.js'))
