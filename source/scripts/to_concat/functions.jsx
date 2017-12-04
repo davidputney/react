@@ -1,375 +1,34 @@
 import colors from "./modules/colors"
-
 import React, { Component } from "../../../node_modules/react"
 import ReactDOM from "../../../node_modules/react-dom"
 import { Children, PropTypes } from 'react'
 
 import { newPostKey, writeNewPost, cleanData, getData } from "./modules/firebase";
 
+import Checkbox from "./modules/module_checkbox"
+import { SelectDropdown, ListItem, Select } from "./modules/module_dropdown";
+import { ColorPicker, ColorSwatch } from "./modules/module_colorpicker";
+import { NoteText, NoteTextSaved } from "./modules/module_notetext";
+import { Button, CloseButton, RevertButton, RestoreButton } from "./modules/module_buttons"
+import NewNote from "./modules/module_newnote"
+import Assigned from "./modules/module_assigned"
+import {Loader, Failed} from "./modules/module_loaders"
 
 const app = document.querySelector("#app")
-const database = firebase.database()
-
 
 let notesCont = []
 let notesHash = []
 let namesList = notesCont.map(note => note.assigned)
 
-
 const createNotesHash = r => {
   notesHash = r.map(el => el.id)
 }
 
-// console.log("hash", createNotesHash(notesCont));
-
-
 namesList = namesList.filter((elem, index, self) => index == self.indexOf(elem))
 namesList.push("Unassigned")
 
-
 const editStates = []
-
 const rando = () => Math.floor((Math.random() * 4) + 1);
-
-const Loader = () =>
-  <div className="loader active">
-    <h1>Loading</h1>
-  </div>
-
-const Failed = ({ action = f => f }) => {
-  let _select
-  const submit = (e) => {
-    e.preventDefault()
-    action()
-  }
-  return (
-    <div className="loader active failed">
-      <h1
-        onClick={submit}
-      >
-        Failed</h1>
-    </div>
-  )
-}
-
-const Assigned = ({ action = f => f, text = "", list = [], id }) => {
-  let _select
-  const submit = (e) => {
-    e.preventDefault()
-    action(_select.value, id)
-  }
-  return (
-    <div className="hidden">
-      <p>Select list</p>
-      <select
-        id="myList"
-        value={text}
-        ref={select => _select = select}
-        onChange={submit}
-      >
-        { list.map((el, i) => <Select item={el} key={i} />) }
-      </select>
-    </div>
-  )
-}
-Assigned.propTypes = {
-  action: React.PropTypes.func,
-  text: React.PropTypes.string,
-  list: React.PropTypes.array,
-  id: React.PropTypes.string,
-}
-
-Assigned.defaultProps = {
-  action: f => f,
-  text: "",
-  list: [],
-  id: "",
-}
-
-const Select = ({ item }) =>
-  <option>{item}</option>
-
-Select.propTypes = {
-  item: React.PropTypes.string,
-}
-Select.defaultProps = {
-  item: "",
-}
-
-const ListItem = ({ action, text, id }) => {
-  let _listItem
-  const listSelect = () => {
-    action(text, id)
-  }
-  return (
-    <li
-      onClick={listSelect}
-    >
-      {text}
-    </li>
-  )
-}
-
-ListItem.propTypes = {
-  action: React.PropTypes.func,
-  text: React.PropTypes.string,
-  id: React.PropTypes.string,
-}
-
-ListItem.defaultProps = {
-  action: f => f,
-  text: "",
-  id: "",
-}
-
-const SelectDropdown = ({ action = f => f, text = "", list = [], id = "" }) =>
-  <div className="select">
-    <p>Assigned to</p>
-    <ul aria-hidden="true">
-      <li className="selector"> {list.map(name => name === text ? name : false)}
-        <ul>
-          {list.map((name, i) =>
-            name !== text ? <ListItem action={action} id={id} text={name} key={i} /> : false)}
-          </ul>
-        </li>
-    </ul>
-  </div>
-
-SelectDropdown.propTypes = {
-  action: React.PropTypes.func,
-  text: React.PropTypes.string,
-  list: React.PropTypes.array,
-  id: React.PropTypes.string,
-}
-SelectDropdown.defaultProps = {
-  action: f => f,
-  text: "",
-  list: [],
-  id: "",
-}
-
-const Checkbox = ({ checked = "false", checkChange = f => f, id = "" }) => {
-  const submit = () => checkChange(id)
-  return (
-    <form>
-      <input
-        type="checkbox"
-        defaultChecked={checked}
-        onChange={submit}
-        id={`check${id}`}
-      />
-      <label htmlFor={`check${id}`} >Done</label>
-    </form>
-  )
-}
-Checkbox.propTypes = {
-  checked: React.PropTypes.bool,
-  checkChange: React.PropTypes.func,
-  id: React.PropTypes.string,
-}
-Checkbox.defaultProps = {
-  checked: false,
-  checkChange: f => f,
-  id: "",
-}
-
-const ColorPicker = ({ colors, id, selectColor }) =>
-    <div className="notes-color-picker">
-    <div className="notes-picker-icn" >
-      <svg className="icn-color" >
-        <use xlinkHref="#crayons" / >
-      </svg>
-      <div className="notes-colors" > {
-        colors.map((color, i) =>
-          <ColorSwatch
-            color={ color.name }
-            id = { id }
-            selectColor = { selectColor }
-            key = { i }
-          />
-        ) }
-      </div>
-    </div>
-  </div>
-
-ColorPicker.propTypes = {
-  colors: React.PropTypes.array,
-  selectColor: React.PropTypes.func,
-  id: React.PropTypes.string,
-}
-
-const ColorSwatch = ({ color, id, selectColor }) => {
-  let _radio
-  const submit = (e => selectColor(id, color))
-  return (
-    <div>
-      <input id={`${id}${color}`}
-        className={color, "color"}
-        name={`clrs-${id}`}
-        type="radio"
-        value={color}
-        ref={input => _radio = input}
-        onChange={submit}
-      />
-      <label
-        htmlFor={`${id}${color}`}
-        className={color}
-      >
-        {color}
-      </label>
-    </div>
-  )
-}
-ColorSwatch.propTypes = {
-  color: React.PropTypes.string,
-  selectColor: React.PropTypes.func,
-  id: React.PropTypes.string,
-}
-
-const NoteText = ({ toggle = "false", noteInput = f => f, editHistory = f => f, note = {} }) => {
-  const editMode = note.editMode || false
-  let _textArea
-  const submit = () => {
-    noteInput(_textArea.innerText, note.id)
-    editHistory(_textArea.innerText, note.id)
-    toggle(!editMode, note.id)
-  }
-  const textDisplay = () => {
-    _textArea.focus()
-    if (!editMode) {
-      toggle(!editMode, note.id)
-    }
-  }
-  const handleReturn = (e) => {
-    console.log(e.shiftKey);
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      submit()
-    }
-  }
-  return (
-    <div
-      contentEditable={editMode}
-      className="note-editable"
-      ref={input => _textArea = input}
-      onBlur={submit}
-      onClick={textDisplay}
-      onKeyPress={handleReturn}
-      placeholder="Enter note text ..."
-    >
-      {note.text}
-    </div>
-  )
-}
-
-NoteText.propTypes = {
-  toggle: React.PropTypes.func,
-  noteInput: React.PropTypes.func,
-  editHistory: React.PropTypes.func,
-  note: React.PropTypes.object,
-}
-
-const NoteTextSaved = ({ id="default", saveID, saveStatus }) => {
-  return (
-  <div
-    className = {saveStatus && saveID ===id ? "saved-overlay active": "saved-overlay"}
-  >
-    Saved
-  </div> )
-}
-
-
-const Button = ({ action = f => f, id = "", label = "" }) => {
-  let _btn
-  const submit = (e) => {
-    e.preventDefault()
-    action(id)
- }
-  return (
-    <div>
-      <button
-        type="submit"
-        onClick={submit}
-        ref={input => _btn=input}
-      >
-        {label}
-      </button>
-    </div>
-  )
-}
-Button.propTypes = {
-  action: React.PropTypes.func,
-  id: React.PropTypes.string,
-  label: React.PropTypes.string,
-}
-
-const CloseButton = ({ action, id }) => {
-  let _btn
-  const submit = (e) => {
-    e.preventDefault()
-    action(id)
-  }
-  return (
-    <svg
-      className="note-close-btn"
-      aria-hidden="true"
-      onClick={submit}
-      ref={input => _btn=input}
-    >
-      <use xlinkHref="#close_icon" />
-    </svg>
-  )
-}
-CloseButton.propTypes = {
-  action: React.PropTypes.func,
-  id: React.PropTypes.string,
-}
-
-const RevertButton = ({ action, id }) => {
-  let _btn
-  const submit = (e) => {
-    e.preventDefault()
-    action(id)
-  }
-  return (
-    <svg
-      className="note-revert-btn"
-      aria-hidden="true"
-      onClick={submit}
-      ref={input => _btn = input}
-    >
-      <use xlinkHref="#video-control-previous" />
-    </svg>
-  )
-}
-
-RevertButton.propTypes = {
-  action: React.PropTypes.func,
-  id: React.PropTypes.string,
-}
-
-const RestoreButton = ({ action, id }) => {
-  let _btn
-  const submit = ((e) => {
-    e.preventDefault()
-    action(id)
-  })
-  return (
-    <svg
-      className="note-revert-btn"
-      aria-hidden="true"
-      onClick={submit}
-      ref = {input => _btn=input}
-    >
-      <use xlinkHref="#video-control-next" />
-    </svg>
-  )
-}
-
-RestoreButton.propTypes = {
-  action: React.PropTypes.func,
-  id: React.PropTypes.string,
-}
 
 const NoteHeader = ({action, id}) =>
   <header
@@ -436,25 +95,6 @@ const NoteFooter = ({ colors, id, selectColor, action, label, checked, checkChan
       />
     </div>
   </footer>
-
-
-const NewNote = ({ handleNewNote }) => {
-  let _note
-  const submit = () => handleNewNote()
-  return (
-    <div
-      className="note"
-      ref={input => _note=input}
-      onClick={submit}
-    >
-      <p> new note </p>
-    </div>
-  )
-}
-NewNote.propTypes = {
-  handleNewNote: React.PropTypes.func,
-}
-
 
 const NoteToo = ({  handleNoteRemove, singleNote, noteInput, editHistory, handleEditToggle, saveStatus, saveID, colors, handleColorPicker, handleRevert, checkChange, namesList, handleAssigned }) => {
     return (
@@ -575,13 +215,8 @@ class App extends React.Component {
   }
   handleNoteText(val, id) {
     let notes = { ...this.state }
-    // console.log("index", notesHash.indexOf(id));
-    // console.log("id", id);
-    // console.log(notesHash);
     const i = notesHash.indexOf(id)
     notes.notesCont[i].text = val
-    // notes.notesCont.map(note =>
-    //   note.text = (id === note.id) ? val: note.text)
     this.setState(notes, (idfoo = id, valfoo = val) => this.handleNoteSave(idfoo, valfoo))
   }
   handleNoteSave(id, val) {
