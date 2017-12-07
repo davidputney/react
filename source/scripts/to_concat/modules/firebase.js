@@ -2,13 +2,24 @@
 // used to creating a new post
 const newPostKey = database => database.ref("/notes/").child('notes').push().key;
 
+// // writes to DB. gets value and a path
+// const writeNewPost = (value=null, path='notes/') => {
+//   console.log("value", value);
+//   firebase.database().ref(path).update(value)
+//   const p = new Promise((resolve, reject) => {
+//     firebase.database().ref(path).on('value', snapshot => snapshot ? resolve(snapshot.val()) : reject("error"))
+//   })
+//   return p
+// }
+
 // writes to DB. gets value and a path
 const writeNewPost = (value=null, path='notes/') => {
-  firebase.database().ref(path).update(value)
-  const p = new Promise((resolve, reject) => {
-    firebase.database().ref(path).on('value', snapshot => snapshot ? resolve(snapshot.val()) : reject("error"))
-  })
-  return p
+  const fooBar = firebase.database().ref(path).update(value, error => error ? false: true
+    // const foo = error? "error": "no error"
+    // console.log("foo", foo);
+    // }
+  )
+  return fooBar
 }
 
 
