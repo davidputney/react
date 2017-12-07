@@ -71,7 +71,7 @@ var paths = {
     dist : 'public/'
   },
   scripts : {
-    input : 'source/scripts/to_concat/**/*.jsx',
+    input : 'source/scripts/to_concat/**/*{.jsx,.js}',
     exclude : 'source/scripts/exclude/*.js',
     vendor : 'source/scripts/to_concat/vendor/*.js',
     temp : 'test/scripts/temp',
@@ -164,7 +164,7 @@ gulp.task('templates', function() {
 
 // cleans out temp file in test
 gulp.task('clean-temp', function(){
-  return del([paths.scripts.temp + "/*.{js,jsx}"]);
+  return del([paths.scripts.temp + "/*.js"]);
 });
 
 gulp.task('js', ['clean-temp'], function() {
