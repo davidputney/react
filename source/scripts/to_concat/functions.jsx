@@ -3,7 +3,7 @@ import React, { Component } from "../../../node_modules/react"
 import ReactDOM from "../../../node_modules/react-dom"
 import { Children, PropTypes } from 'react'
 
-import { newPostKey, writeNewPost, cleanData, getData } from "./modules/firebase";
+// import { newPostKey, writeNewPost, cleanData, getData } from "./modules/firebaseFoo";
 
 import Checkbox from "./modules/module_checkbox"
 import { SelectDropdown, ListItem, Select } from "./modules/module_dropdown";
@@ -16,7 +16,7 @@ import {Loader, Failed} from "./modules/module_loaders"
 
 const app = document.querySelector("#app")
 
-console.log("foo");
+console.log("foo bar");
 
 let notesCont = []
 let notesHash = []
@@ -31,6 +31,41 @@ namesList.push("Unassigned")
 
 const editStates = []
 const rando = () => Math.floor((Math.random() * 4) + 1);
+
+// creates a new key in the database and returns key value
+// used to creating a new post
+const newPostKey = database => database.ref("/notes/").child('notes').push().key;
+
+// // writes to DB. gets value and a path
+// const writeNewPost = (value=null, path='notes/') => {
+//   console.log("value", value);
+//   firebase.database().ref(path).update(value)
+//   const p = new Promise((resolve, reject) => {
+//     firebase.database().ref(path).on('value', snapshot => snapshot ? resolve(snapshot.val()) : reject("error"))
+//   })
+//   return p
+// }
+
+console.log("firebase foo");
+
+// const writeNewPost = (value=null, id, f) => {
+//   firebase.database().ref(`notes/${id}`).update(value, error => {
+//     error? f(false, id): f(true, id)
+//     }
+//   )
+// }
+
+const cleanData = (data => Object.keys(data).map(id => ({...data[id], id})))
+// get data
+const getData = (path="notes/") =>
+  new Promise((resolve, reject) => {
+    firebase.database().ref(path).on("value", snapshot => snapshot ? resolve(snapshot): reject("error"))
+  })
+
+
+
+
+
 
 const NoteHeader = ({action, id}) =>
   <header
@@ -221,25 +256,20 @@ class App extends React.Component {
     notes.notesCont[i].text = val
     this.setState(notes, (idfoo = id, valfoo = val) => this.handleNoteSave(idfoo, valfoo))
   }
-  handleNoteSave(id, val) {
-    this.setState({ saveStatus: false, saveID: null }, () =>
-      writeNewPost({text: val},`notes/${id}`)
-      .then (
-        foobar => foobar.text === val? this.handleSaveSucceess(id): this.handleNoteSaveFail(val, id, "then")
-      )
-      .catch (
-        this.handleNoteSaveFail(val, id, "catch")
-      // failure handler
-      )
+  writeNewPost(value=null, id, f) {
+    firebase.database().ref(`notes/${id}`).update(value, error => error? this.handleNoteSaveFail(id): this.handleSaveSucceess(id)
     )
   }
-  handleNoteSaveFail(val, id, string) {
-
-
+  handleNoteSave(id, val) {
+    this.setState({ saveStatus: false, saveID: null }, ( () => this.writeNewPost({text: val}, id, this.handleSave)
+    ))
+  }
+  handleNoteSaveFail(val) {
+    console.log("fail");
   }
   handleSaveSucceess(id) {
     console.log("save worked");
-    this.setState({ saveStatus: true, saveID: id }, (valu = this.state) => console.log("save success", valu))
+    this.setState({ saveStatus: true, saveID: id })
   }
   handleEditToggle(val, id) {
     let notes = { ...this.state }
